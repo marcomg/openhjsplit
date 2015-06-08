@@ -15,18 +15,18 @@
 # Copyright (C) 2013 by marcomg                                        #
 ########################################################################
 
-from os import remove as rm
+import os
 
 # Provide to copy a content of a file in another file (using buffer and a limit to copy)
-def copyInFile(iF, oF, buffer=1024, tocopy = 0):
+def __copyInFile(iF, oF, buffersize=1024, tocopy = 0):
     copied = 0
     i = 0
     while True:
         i += 1
         elsetocpy = tocopy - copied
         # free to copy all
-        if (elsetocpy - buffer > 0) or (tocopy == 0):
-            tmp = iF.read(buffer)
+        if (elsetocpy - buffersize > 0) or (tocopy == 0):
+            tmp = iF.read(buffersize)
             if tmp == b'':
                 if i == 1:
                     return False
@@ -34,7 +34,7 @@ def copyInFile(iF, oF, buffer=1024, tocopy = 0):
                     return True
             else:
                 oF.write(tmp)
-                copied += buffer
+                copied += buffersize
         # last data to copy
         else:
             tmp = iF.read(elsetocpy)
@@ -48,7 +48,7 @@ def copyInFile(iF, oF, buffer=1024, tocopy = 0):
                 return True
 
 # Split files
-def split(inFileSrc, splitIn):
+def split(inFileSrc, output, splitIn):
     splitNumber = 1
     try:
         inFile = open(inFileSrc, 'rb');
@@ -56,30 +56,38 @@ def split(inFileSrc, splitIn):
         print('Error: the file %s does not exists. Exiting...' % (inFileSrc))
         exit()
     while True:
-        outFile = open(inFileSrc + '.' + str('%03d' % (splitNumber)), 'wb')
-        if not copyInFile(inFile, outFile, 1024, splitIn):
+        if output == None:
+            outFile = open(inFileSrc + '.' + str('%03d' % (splitNumber)), 'wb')
+        else:
+            outFile = open(os.path.join(output, os.path.basename(inFileSrc)) + '.' + str('%03d' % (splitNumber)), 'wb')
+        if not __copyInFile(inFile, outFile, 1024, splitIn):
             outFile.close()
-            rm(inFileSrc + '.' + str('%03d' % (splitNumber)))
+            if output == None:
+                os.remove(inFileSrc + '.' + str('%03d' % (splitNumber)))
+            else:
+                os.remove(os.path.join(output, os.path.basename(inFileSrc)) + '.' + str('%03d' % (splitNumber)))
             break
         else:
             outFile.close()
             splitNumber += 1
 
 # Join files
-def join(firstFileIn):
+def join(firstFileIn, output):
     firstFileInE = firstFileIn[:-3]
     outFileSrc = firstFileInE[:-1]
     joinNumber = 1
+    if output != None:
+        outFileSrc = os.path.join(output, os.path.basename(outFileSrc))
     outFile = open(outFileSrc, 'wb')
     while True:
         try:
             inFile = open(firstFileInE + str('%03d' % (joinNumber)), 'rb')
-            copyInFile(inFile, outFile, 1024, 0)
+            __copyInFile(inFile, outFile, 1024, 0)
             #outFile.write(inFile.read())
             inFile.close()
             joinNumber += 1
         except FileNotFoundError:
             if joinNumber <= 1:
-                print('Error: the file %s does not exists. Exiting...' % (firstFileIn))
+                print('Error: the file %s.001 does not exists. Exiting...' % (firstFileIn))
             outFile.close()
-            exit()
+            return

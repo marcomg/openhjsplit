@@ -108,8 +108,8 @@ def getHumanValue(inVar, si=True):
                 return(str(int(inVar))+'ZB')
         if(inVar >= 1000):
             inVar = inVar/1000
-            if(inVar < 1000):
-                return(str(int(inVar))+'YB')
+            #if(inVar < 1000):
+            return(str(int(inVar))+'YB')
         else:
             return(str(int(inVar))+'B')
     #bu
@@ -144,10 +144,10 @@ def getHumanValue(inVar, si=True):
                 return(str(int(inVar))+'ZiB')
         if(inVar >= 1024):
             inVar = inVar/1024
-            if(inVar < 1024):
-                return(str(int(inVar))+'YiB')
+            #if(inVar < 1024):
+            return(str(int(inVar))+'YiB')
         else:
             return(str(int(inVar))+'B')
 
-def optimize(inVar):
-    return getHumanValue(getBytes(inVar))
+def optimize(inVar, si=True):
+    return getHumanValue(getBytes(inVar), si)

@@ -27,6 +27,7 @@ try:
     argParse.add_argument('-j', '--join', action='store_true', help='select if join files')
     argParse.add_argument('-s', '--split', action='store_true', help='select if split files')
     argParse.add_argument('-w', '--weight', action='store', type=str, help='the file size to split');
+    argParse.add_argument('-o', '--output', action='store', type=str, help='change the default output directory');
     argParse.add_argument('patch', action='store', type=str, help='the file patch (if join the first file [with .001], if split the file to split)');
     args = argParse.parse_args()
 
@@ -35,12 +36,12 @@ try:
         exit()
 
     if args.join:
-        libhjsplit.join(args.patch)
+        libhjsplit.join(args.patch, args.output)
     elif args.split:
         if args.weight == None:
             print('Select the weight. Exiting...')
             exit()
-        libhjsplit.split(args.patch, libitunitsconversion.getBytes(args.weight))
+        libhjsplit.split(args.patch, args.output, libitunitsconversion.getBytes(args.weight))
     else:
         print('Or join or split, decide. Exiting...')
         exit()
